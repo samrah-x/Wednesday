@@ -1,0 +1,28 @@
+{
+    "java.project.sourcePaths": ["src"],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "c:\\Users\\HP\\Downloads\\mysql-connector-j-8.4.0\\mysql-connector-j-8.4.0\\mysql-connector-j-8.4.0.jar",
+        "c:\\Users\\HP\\Downloads\\mysql-connector-j-8.0.32\\mysql-connector-j-8.0.32.jar",
+        "c:\\Users\\HP\\Downloads\\mysql-connector-j-8.1.0\\mysql-connector-j-8.1.0.jar",
+        "c:\\Users\\HP\\Downloads\\mysql-connector-j-8.0.33\\mysql-connector-j-8.0.33\\mysql-connector-j-8.0.33.jar"
+    ],
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "xprotocol",
+                "enableSsl": "Disabled"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 33060,
+            "driver": "MySQL",
+            "name": "MYSQL Local",
+            "database": "gym",
+            "username": "root",
+            "password": "MYpassw0rd!",
+            "connectionTimeout": 30
+        }
+    ]
+}
