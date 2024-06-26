@@ -33,7 +33,7 @@ public class GymManagementSystem {
             // Member member = new Member(connection, scanner);
             // Trainer trainer = new Trainer(connection, scanner);
             Accounts accounts = new Accounts(connection, scanner);
-            Equipment equipment = new Equipment(connection, scanner);
+            // Equipment equipment = new Equipment(connection, scanner);
             // Booking booking = new Booking(connection, scanner);
             
             while(true) {
@@ -85,13 +85,6 @@ public class GymManagementSystem {
                 frame.setLocationRelativeTo(null); // Center the frame on screen
                 frame.setVisible(true);
             
-                
-                
-                if(accountType == "Member") {
-                    // display fields
-                    // button for get booking
-                    booking.addBooking();
-                }
             }
         } catch (SQLException e) { 
             e.printStackTrace();

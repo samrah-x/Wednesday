@@ -122,6 +122,10 @@ public class Accounts {
                     System.out.println("Login Success!");
                     if(memberType == "Member") {
                         // open member mainpage
+                        member.openMemberMenu();
+                    } else {
+                        // open trainer mainpage
+                        trainer.openTrainerMenu();
                     }
                 }
                 else {

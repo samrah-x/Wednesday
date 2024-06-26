@@ -14,10 +14,15 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import GMS.*;
+
 public class Trainer {
     
     private Connection connection;
     private Scanner scanner;
+
+    Booking booking = new Booking(connection, scanner);
+    Equipment equipment = new Equipment(connection, scanner);
 
     public Trainer(Connection connection, Scanner scanner) {
         this.connection = connection;
@@ -120,6 +125,56 @@ public class Trainer {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public void openTrainerMenu(){
+        JFrame frame = new JFrame("Trainer Menu");
+
+        // Create buttons for various functionalities
+        JButton viewEquipmentButton = new JButton("View Equipment");
+        viewEquipmentButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                equipment.viewEquipment();
+            }
+        });
+
+        JButton addEquipmentButton = new JButton("Add Equipment");
+        addEquipmentButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                addEquipment();
+            }
+        });
+
+        JButton viewBookingsButton = new JButton("View Bookings");
+        viewBookingsButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                booking.viewBookings();
+            }
+        });
+
+        JButton viewTrainersButton = new JButton("View Trainers");
+        viewTrainersButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                viewTrainers();
+            }
+        });
+
+        // Create panel for trainer menu buttons
+        JPanel trainerPanel = new JPanel();
+        trainerPanel.setLayout(new GridLayout(4, 1, 10, 10));
+        trainerPanel.add(viewEquipmentButton);
+        trainerPanel.add(addEquipmentButton);
+        trainerPanel.add(viewBookingsButton);
+        trainerPanel.add(viewTrainersButton);
+
+        // Add trainer panel to frame
+        frame.add(trainerPanel);
+
+        // Set frame properties
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Dispose on close to return to main application
+        frame.setSize(300, 200);
+        frame.setLocationRelativeTo(null); // Center the frame on screen
+        frame.setVisible(true);
     }
 
     public boolean checkTrainerByName(String name) {
