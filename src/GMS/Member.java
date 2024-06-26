@@ -1,15 +1,27 @@
 package GMS;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Scanner;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.*;
+
+
 
 // RENAME AS MEMBER
 public class Member {
     
     private Connection connection;
     private Scanner scanner;
+
+    Booking booking = new Booking(connection, scanner);
 
     private double weight;
     private double height;
@@ -20,60 +32,217 @@ public class Member {
     }
 
     public void addMember() {
-        System.out.print("Enter Member Name: ");
-        String name = scanner.next();
-        System.out.print("Enter Member Age: ");
-        int age = scanner.nextInt();
-        System.out.print("Enter Member Gender: ");
-        // checkbox
-        String gender = scanner.next();
-        System.out.print("Enter Member Weight: ");
-        weight = scanner.nextDouble();
-        System.out.print("Enter Member Height: ");
-        height = scanner.nextDouble();
-        // static method calculateBMI
-        double BMI = calculateBMI(weight, height);
+        JFrame frame = new JFrame("Add New Member");
+
+        // Create labels and fields
+        JLabel nameLabel = new JLabel("Name:");
+        JTextField nameField = new JTextField(20);
+
+        JLabel ageLabel = new JLabel("Age:");
+        JTextField ageField = new JTextField(20);
+
+        JLabel genderLabel = new JLabel("Gender:");
+        String[] genders = {"Male", "Female"};
+        JComboBox<String> genderComboBox = new JComboBox<>(genders);
+
+        JLabel weightLabel = new JLabel("Weight (kg):");
+        JTextField weightField = new JTextField(20);
+
+        JLabel heightLabel = new JLabel("Height (cm):");
+        JTextField heightField = new JTextField(20);
+
+        // Create add member button
+        JButton addMemberButton = new JButton("Add Member");
+        addMemberButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String name = nameField.getText().trim();
+                    int age = Integer.parseInt(ageField.getText().trim());
+                    String gender = (String) genderComboBox.getSelectedItem();
+                    double weight = Double.parseDouble(weightField.getText().trim());
+                    double height = Double.parseDouble(heightField.getText().trim());
+                    double BMI = calculateBMI(weight, height);
+
+                    String query = "INSERT INTO members(name, age, gender, weight, height, BMI) VALUES (?,?,?,?,?,?)";
+                    PreparedStatement preparedStatement = connection.prepareStatement(query);
+                    preparedStatement.setString(1, name);
+                    preparedStatement.setInt(2, age);
+                    preparedStatement.setString(3, gender);
+                    preparedStatement.setDouble(4, weight);
+                    preparedStatement.setDouble(5, height);
+                    preparedStatement.setDouble(6, BMI);
+                    int affectedRows = preparedStatement.executeUpdate();
+                    if (affectedRows > 0) {
+                        JOptionPane.showMessageDialog(frame, "Member added successfully!");
+                        frame.dispose(); // Close the popup
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "Failed to add member.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(frame, "Please enter valid numbers for age, weight, and height.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        // Create panel for member components
+        JPanel memberPanel = new JPanel();
+        memberPanel.setLayout(new GridLayout(6, 2, 10, 10));
+        memberPanel.add(nameLabel);
+        memberPanel.add(nameField);
+        memberPanel.add(ageLabel);
+        memberPanel.add(ageField);
+        memberPanel.add(genderLabel);
+        memberPanel.add(genderComboBox);
+        memberPanel.add(weightLabel);
+        memberPanel.add(weightField);
+        memberPanel.add(heightLabel);
+        memberPanel.add(heightField);
+        memberPanel.add(new JLabel()); // Empty label for spacing
+        memberPanel.add(addMemberButton);
+
+        // Add member panel to frame
+        frame.add(memberPanel);
+
+        // Set frame properties
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Dispose on close to return to main application
+        frame.setSize(400, 300);
+        frame.setLocationRelativeTo(null); // Center the frame on screen
+        frame.setVisible(true);
+    }
+ 
+    
+    public void viewMembers() {
+        JFrame frame = new JFrame("View Members");
+
+        // Define column names
+        String[] columnNames = {"ID", "Name", "Age", "Gender", "Weight", "Height", "BMI"};
+
+        // Fetch data from the database
+        String query = "SELECT id, name, age, gender, weight, height, BMI FROM members";
         try {
-            String query = "INSERT into members(name, age, gender, weight, height, BMI) values (?,?,?,?,?,?)";
-            PreparedStatement preparedstatement = connection.prepareStatement(query);
-            preparedstatement.setString(1, name);
-            preparedstatement.setInt(2, age);
-            preparedstatement.setString(3, gender);
-            preparedstatement.setDouble(4, weight);
-            preparedstatement.setDouble(5, height);
-            preparedstatement.setDouble(6, BMI);
-            int affectedRows = preparedstatement.executeUpdate();
-            if (affectedRows > 0) {
-                System.out.println("Member Added successfully!");
+            PreparedStatement preparedStatement = connection.prepareStatement(query);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            // Get data from the result set and store in a list
+            java.util.List<String[]> data = new ArrayList<>();
+            while (resultSet.next()) {
+                String[] row = new String[7];
+                row[0] = String.valueOf(resultSet.getInt("id"));
+                row[1] = resultSet.getString("name");
+                row[2] = String.valueOf(resultSet.getInt("age"));
+                row[3] = resultSet.getString("gender");
+                row[4] = String.valueOf(resultSet.getDouble("weight"));
+                row[5] = String.valueOf(resultSet.getDouble("height"));
+                row[6] = String.valueOf(resultSet.getDouble("BMI"));
+                data.add(row);
             }
-            else {
-                System.out.println("Failed to add Member.");
-            }
+
+            // Convert list to array
+            String[][] dataArray = data.toArray(new String[0][]);
+
+            // Create JTable with fetched data
+            JTable table = new JTable(dataArray, columnNames);
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+            table.setFillsViewportHeight(true);
+
+            // Add JTable to JScrollPane
+            JScrollPane scrollPane = new JScrollPane(table);
+            frame.add(scrollPane);
+
+            // Set frame properties
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setSize(800, 400);
+            frame.setLocationRelativeTo(null); // Center the frame on screen
+            frame.setVisible(true);
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
-    public void viewMember() {
-        // read operation 
-        String query = "select * from members";
+    public void openMemberMenu() {
+        JFrame frame = new JFrame("Member Menu");
 
+        // Create labels and fields
+        JLabel nameLabel = new JLabel("Enter Member Name:");
+        JTextField nameField = new JTextField(20);
+
+        // Create button to get member data
+        JButton getMemberButton = new JButton("Get Member Data");
+        getMemberButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String name = nameField.getText().trim();
+                if (!name.isEmpty()) {
+                    displayMemberData(name);
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Please enter a member name.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
+        // Create button to add booking
+        JButton addBookingButton = new JButton("Get Booking");
+        addBookingButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                booking.addBooking();
+            }
+        });
+
+        // Create panel for member menu components
+        JPanel memberPanel = new JPanel();
+        memberPanel.setLayout(new GridLayout(3, 2, 10, 10));
+        memberPanel.add(nameLabel);
+        memberPanel.add(nameField);
+        memberPanel.add(getMemberButton);
+        memberPanel.add(addBookingButton);
+
+        // Add member panel to frame
+        frame.add(memberPanel);
+
+        // Set frame properties
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Dispose on close to return to main application
+        frame.setSize(400, 200);
+        frame.setLocationRelativeTo(null); // Center the frame on screen
+        frame.setVisible(true);
+    }
+
+    private void displayMemberData(String name) {
+        JFrame dataFrame = new JFrame("Member Data");
+
+        // Fetch data from the database
+        String query = "SELECT * FROM members WHERE name = ?";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(query);
+            preparedStatement.setString(1, name);
             ResultSet resultSet = preparedStatement.executeQuery();
-            System.out.println("+-----+----------------------+-------+----------+--------+--------+-------+");
-            System.out.println("| ID  | Name                 | Age   | Gender   | Weight | Height | BMI   |");
-            System.out.println("+-----+----------------------+-------+----------+--------+--------+-------+");
-            while(resultSet.next()) {
-                int id = resultSet.getInt("id");
-                String name = resultSet.getString("name");
-                int age = resultSet.getInt("age");
-                String gender = resultSet.getString("gender");
-                double weight = resultSet.getDouble("weight");
-                double height = resultSet.getDouble("height");
-                double BMI = resultSet.getDouble("BMI");
-                System.out.printf("|%-5d|%-22s|%-7d|%-10s|%-8.1f|%-8.1f|%-7.1f|\n", id, name, age, gender, weight, height, BMI);
-                System.out.println("+-----+----------------------+-------+----------+--------+--------+-------+");
+
+            if (resultSet.next()) {
+                String[] columnNames = {"ID", "Name", "Age", "Gender", "Weight", "Height", "BMI"};
+                String[][] data = new String[1][7];
+                data[0][0] = String.valueOf(resultSet.getInt("id"));
+                data[0][1] = resultSet.getString("name");
+                data[0][2] = String.valueOf(resultSet.getInt("age"));
+                data[0][3] = resultSet.getString("gender");
+                data[0][4] = String.valueOf(resultSet.getDouble("weight"));
+                data[0][5] = String.valueOf(resultSet.getDouble("height"));
+                data[0][6] = String.valueOf(resultSet.getDouble("BMI"));
+
+                JTable table = new JTable(data, columnNames);
+                table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+                table.setFillsViewportHeight(true);
+
+                JScrollPane scrollPane = new JScrollPane(table);
+                dataFrame.add(scrollPane);
+
+                // Set frame properties
+                dataFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                dataFrame.setSize(800, 400);
+                dataFrame.setLocationRelativeTo(null); // Center the frame on screen
+                dataFrame.setVisible(true);
+            } else {
+                JOptionPane.showMessageDialog(dataFrame, "Member not found.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -99,7 +268,7 @@ public class Member {
         return false;
     }
 
-    private double calculateBMI(double weight, double height) {
+    public static double calculateBMI(double weight, double height) {
         return weight / (height * height);
     }
 

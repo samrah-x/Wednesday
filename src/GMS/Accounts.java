@@ -5,6 +5,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.*;
+
 public class Accounts {
     private Connection connection;
     private Scanner scanner;
@@ -13,32 +19,136 @@ public class Accounts {
         this.connection = connection;
         this.scanner = scanner;
     }
+    Member member = new Member(connection, scanner);
+    Trainer trainer = new Trainer(connection, scanner);
 
     // in main add addmember function
     public void signup() {
-        // creates an account regardless of pre-existence and type of acc (member/ trainer)
-        System.out.print("Enter username: ");
-        String username = scanner.next();
-        System.out.print("Enter password: ");
-        String password = scanner.next();
+        JFrame frame;
+        JRadioButton memberRadioButton;
+        JRadioButton trainerRadioButton;
+    
+        frame = new JFrame("Signup");
+        
+        // Create labels and fields
+        JLabel usernameLabel = new JLabel("Username:");
+        JTextField usernameField = new JTextField(20);
+        
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField(20);
+        
+        // Create radio buttons
+        memberRadioButton = new JRadioButton("Member");
+        trainerRadioButton = new JRadioButton("Trainer");
+        
+        // Group radio buttons
+        ButtonGroup group = new ButtonGroup();
+        group.add(memberRadioButton);
+        group.add(trainerRadioButton);
+        
+        // Create signup button
+        JButton signupButton = new JButton("Signup");
+        signupButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String username = usernameField.getText().trim();
+                String password = new String(passwordField.getPassword());
+                String memberType = (memberRadioButton.isSelected()) ? "Member" : "Trainer";
+                
+                addAccount(username, password);
 
-        addAccount(username, password);
+                if(memberType == "Member") {
+                    member.addMember();
+                }
+                else {
+                    trainer.addTrainer();
+                }
+            }
+        });
+        
+        // Create panel for signup components
+        JPanel signupPanel = new JPanel();
+        signupPanel.setLayout(new GridLayout(4, 2, 10, 10));
+        signupPanel.add(usernameLabel);
+        signupPanel.add(usernameField);
+        signupPanel.add(passwordLabel);
+        signupPanel.add(passwordField);
+        signupPanel.add(memberRadioButton);
+        signupPanel.add(trainerRadioButton);
+        signupPanel.add(new JLabel()); // Empty label for spacing
+        signupPanel.add(signupButton);
+        
+        // Add signup panel to frame
+        frame.add(signupPanel);
+        
+        // Set frame properties
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Dispose on close to return to welcome page
+        frame.setSize(300, 200);
+        frame.setLocationRelativeTo(null); // Center the frame on screen
+        frame.setVisible(true);
     }
 
-    public void login () {
-        // try ccatch 
-        // login does not have condition for type of acc although functions in main after this will have if black for type of acc
-        System.out.print("Enter username: ");
-        String username = scanner.next();
-        System.out.print("Enter password: ");
-        String password = scanner.next();
 
-        if (checkAccountByUsername(username, password)) {
-            System.out.println("Login Success!");
-        }
-        else {
-            System.out.println("Login Unsuccessful!");
-        }
+    public void login () {
+        JFrame frame = new JFrame("Login");
+        JRadioButton memberRadioButton;
+        JRadioButton trainerRadioButton;
+        
+        // Create labels and fields
+        JLabel usernameLabel = new JLabel("Username:");
+        JTextField usernameField = new JTextField(20);
+        
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField(20);
+        
+        // Create radio buttons
+        memberRadioButton = new JRadioButton("Member");
+        trainerRadioButton = new JRadioButton("Trainer");
+
+        // Group radio buttons
+        ButtonGroup group = new ButtonGroup();
+        group.add(memberRadioButton);
+        group.add(trainerRadioButton);
+        
+        // Create login button
+        JButton loginButton = new JButton("Login");
+        loginButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String username = usernameField.getText().trim();
+                String password = new String(passwordField.getPassword());
+                String memberType = (memberRadioButton.isSelected()) ? "Member" : "Trainer";
+                
+                
+                if (checkAccountByUsername(username, password)) {
+                    System.out.println("Login Success!");
+                    if(memberType == "Member") {
+                        // open member mainpage
+                    }
+                }
+                else {
+                    System.out.println("Login Unsuccessful!");
+                }
+                
+            }
+        });
+        
+        // Create panel for login components
+        JPanel loginPanel = new JPanel();
+        loginPanel.setLayout(new GridLayout(3, 2, 10, 10));
+        loginPanel.add(usernameLabel);
+        loginPanel.add(usernameField);
+        loginPanel.add(passwordLabel);
+        loginPanel.add(passwordField);
+        loginPanel.add(new JLabel()); // Empty label for spacing
+        loginPanel.add(loginButton);
+        
+        // Add login panel to frame
+        frame.add(loginPanel);
+        
+        // Set frame properties
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Dispose on close to return to welcome page
+        frame.setSize(300, 150);
+        frame.setLocationRelativeTo(null); // Center the frame on screen
+        frame.setVisible(true);
     }
 
     public boolean checkAccountByUsername(String username, String password) {
@@ -79,4 +189,5 @@ public class Accounts {
            e.printStackTrace(); 
         }
     }
+
 }
